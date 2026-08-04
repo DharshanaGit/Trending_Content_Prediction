@@ -34,10 +34,13 @@ st.markdown(
     <style>
     /* Reduce the font size of all text in the app for a professional look */
     html, body, [class*="css"], .stMarkdown, p, span, label, input, select {
-        font-size: 0.95rem !important;
+        font-size: 0.92rem !important;
     }
+    /* Main project heading: Center aligned and large font size */
     h1 {
-        font-size: 1.8rem !important;
+        font-size: 2.6rem !important;
+        text-align: center;
+        margin-bottom: 0.5rem;
     }
     h2, h3, [data-testid="stHeader"] {
         font-size: 1.25rem !important;
@@ -64,13 +67,19 @@ st.markdown(
 )
 # -----------------------------------------------------------
 
-st.title("Trending Content Predictor")
+# Center-aligned heading and explanation
 st.markdown(
     """
-    **Will your next video go viral?**  
-    Fill in the metadata below and get an instant probability score.  
-    Experiment with upload time, category, or tag count to see how the odds change.
-    """
+    <div style='text-align: center; margin-bottom: 2rem;'>
+        <h1>Trending Content Predictor</h1>
+        <p style='color: #666; font-size: 1.05rem !important; max-width: 800px; margin: 0 auto;'>
+            <strong>Will your next video go viral?</strong><br/>
+            Fill in the metadata below and get an instant probability score.
+            Experiment with upload time, category, or tag count to see how the odds change.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 with st.sidebar:
@@ -267,20 +276,24 @@ if st.button("Predict Probability", use_container_width=True):
             prob = float(model.predict_proba(df)[0][1])
             elapsed = time.time() - start
 
-            # Render prediction results in the main area
+            # Render prediction results in the main area (Centered & Large callout)
             st.divider()
-            st.subheader("Prediction Result")
-            r_col1, r_col2 = st.columns(2)
-            with r_col1:
-                st.metric(label="Trending Probability", value=f"{prob:.1%}")
-                if is_trending:
-                    st.success("High chance of trending.")
-                else:
-                    st.error("Low chance of trending.")
-            with r_col2:
-                st.write("")
-                st.progress(min(max(prob, 0.0), 1.0))
-                st.caption(f"Inference latency: {elapsed * 1000:.1f}ms (cached model)")
+            st.markdown("<h2 style='text-align: center; margin-bottom: 1rem;'>Prediction Result</h2>", unsafe_allow_html=True)
+            
+            color = '#28a745' if is_trending else '#dc3545'
+            status_text = "High chance of trending." if is_trending else "Low chance of trending."
+            
+            st.markdown(
+                f"<div style='text-align: center; padding: 1.5rem; background-color: rgba(0, 0, 0, 0.02); border-radius: 8px; margin-bottom: 1.5rem;'>"
+                f"<span style='font-size: 1.1rem; color: #555; font-weight: 500;'>Trending Probability</span><br/>"
+                f"<span style='font-size: 4.5rem; font-weight: 900; color: {color}; line-height: 1.1; letter-spacing: -1px;'>{prob:.1%}</span><br/>"
+                f"<span style='font-size: 1.4rem; font-weight: 700; color: {color};'>{status_text}</span>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            
+            st.progress(min(max(prob, 0.0), 1.0))
+            st.caption(f"Inference latency: {elapsed * 1000:.1f}ms (cached model)")
 
             # Show feedback in the main body area
             st.divider()
