@@ -32,18 +32,18 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Reduce the font size of all text in the app for a professional look */
-    html, body, [class*="css"], .stMarkdown, p, span, label, input, select {
+    /* Standardize standard app text font size for a professional look */
+    html, body, p, span, label, input, select, .stWidgetLabel, .stSelectbox, .stSlider {
         font-size: 0.92rem !important;
     }
     /* Main project heading: Center aligned, large, and premium extra-bold */
     h1 {
-        font-size: 3.6rem !important;
+        font-size: 4.2rem !important;
         font-weight: 800 !important;
         text-align: center;
         margin-bottom: 0.5rem;
         color: #1e293b;
-        letter-spacing: -1.5px;
+        letter-spacing: -2px;
         line-height: 1.1;
     }
     h2, h3, [data-testid="stHeader"] {
