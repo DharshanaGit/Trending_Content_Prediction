@@ -36,11 +36,15 @@ st.markdown(
     html, body, [class*="css"], .stMarkdown, p, span, label, input, select {
         font-size: 0.92rem !important;
     }
-    /* Main project heading: Center aligned and large font size */
+    /* Main project heading: Center aligned, large, and premium extra-bold */
     h1 {
-        font-size: 2.6rem !important;
+        font-size: 3.6rem !important;
+        font-weight: 800 !important;
         text-align: center;
         margin-bottom: 0.5rem;
+        color: #1e293b;
+        letter-spacing: -1.5px;
+        line-height: 1.1;
     }
     h2, h3, [data-testid="stHeader"] {
         font-size: 1.25rem !important;
