@@ -140,12 +140,7 @@ with col_left:
         help="Shorter titles tend to perform better on mobile, but very short titles can be ambiguous.",
     )
 
-    # ---- Top Channel Flag --------------------------------------------------------
-    is_top_channel = st.checkbox(
-        "Established Channel Status",
-        value=False,
-        help="Check this if the video is published by an established, popular channel (top 500 trending list).",
-    )
+
 
     # ---- Tags (free‑form) -------------------------------------------------------
     tags_input = st.text_area(
@@ -213,7 +208,7 @@ if st.button("Predict", use_container_width=True):
         "title_length": title_length,
         "comments_disabled": int(comments_disabled),
         "ratings_disabled": int(ratings_disabled),
-        "is_top_channel": int(is_top_channel),
+        "is_top_channel": 0,
     }
 
     # ---- Show a spinner while we wait -----------------------------------------
@@ -234,7 +229,7 @@ if st.button("Predict", use_container_width=True):
                 "title_length": [int(title_length)],
                 "comments_disabled": [int(comments_disabled)],
                 "ratings_disabled": [int(ratings_disabled)],
-                "is_top_channel": [int(is_top_channel)]
+                "is_top_channel": [0]
             })
             
             # Predict
