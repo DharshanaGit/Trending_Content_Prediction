@@ -153,10 +153,8 @@ with col_left:
     countries_dict = {
         "US": "United States",
         "GB": "United Kingdom",
-        "CA": "Canada",
-        "IN": "India",
-        "DE": "Germany",
-        "FR": "France"
+        "CANADA": "Canada",
+        "FRANCE": "France"
     }
     publish_country = st.selectbox(
         "Publish Country",
