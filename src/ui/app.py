@@ -6,11 +6,11 @@ from datetime import datetime
 from pathlib import Path
 import json
 import time
+import joblib
 
 # ---- CONFIG -------------------------------------------------
-API_URL = "http://127.0.0.1:8000/predict"          # change if you deploy elsewhere
-HEALTH_URL = "http://127.0.0.1:8000/docs"         # FastAPI docs endpoint – cheap health check
 MODEL_DIR = Path(__file__).parents[2] / "models"
+MODEL_PATH = MODEL_DIR / "trending_model.joblib"
 FEATURE_IMPORTANCE_IMG = MODEL_DIR / "feature_importance.png"
 # -------------------------------------------------------------
 st.set_page_config(
@@ -63,15 +63,11 @@ with st.sidebar:
         st.info("Feature‑importance plot not found – run `train.py` first.")
 
     st.divider()
-    st.subheader("API Status")
-    try:
-        health_resp = requests.get(HEALTH_URL, timeout=2)
-        if health_resp.status_code == 200:
-            st.success("API reachable")
-        else:
-            st.warning("API returned non‑200")
-    except requests.exceptions.RequestException:
-        st.error("Cannot reach API – check that the FastAPI server is running.")
+    st.subheader("Model Status")
+    if MODEL_PATH.is_file():
+        st.success("Model loaded locally")
+    else:
+        st.error("Model file not found! Train the model first.")
 
 col1, col2 = st.columns(2)
 
@@ -205,51 +201,58 @@ if st.button("Predict", use_container_width=True):
     }
 
     # ---- Show a spinner while we wait -----------------------------------------
-    with st.spinner("Querying the model..."):
+    with st.spinner("Analyzing metadata..."):
         try:
             start = time.time()
-            resp = requests.post(API_URL, json=payload, timeout=8)
+            
+            # Load the model directly instead of calling the API
+            model = joblib.load(MODEL_PATH)
+            
+            # Convert input to DataFrame for the model pipeline
+            df = pd.DataFrame({
+                "category_id": [str(category_id)],
+                "publish_country": [str(publish_country)],
+                "upload_hour": [int(upload_hour)],
+                "upload_dayofweek": [int(upload_day_idx)],
+                "num_tags": [int(num_tags)],
+                "title_length": [int(t_len)],
+                "comments_disabled": [int(comments_disabled)],
+                "ratings_disabled": [int(ratings_disabled)],
+                "title_caps_ratio": [float(t_caps_ratio)],
+                "has_exclamation": [int(has_exclamation)]
+            })
+            
+            # Predict
+            is_trending = int(model.predict(df)[0])
+            prob = float(model.predict_proba(df)[0][1])
             elapsed = time.time() - start
 
-            if resp.status_code == 200:
-                result = resp.json()
-                # Expected keys from your FastAPI: "is_trending", "trending_probability"
-                is_trending = result.get("is_trending", 0)
-                prob = float(result.get("trending_probability", 0.0))
-
-                st.divider()
-                # ---- Simple metric ------------------------------------------------
-                st.metric(label="Trending Probability", value=f"{prob:.1%}")
-                if is_trending:
-                    st.success("High chance of trending.")
-                else:
-                    st.error("Low chance of trending.")
-
-                # ---- Probability gauge (Streamlit's progress bar works fine) -------
-                st.progress(min(max(prob, 0.0), 1.0), text=f"{prob:.1%}")
-
-                # ---- Feedback tip ---------------------------------------------------
-                if not is_trending:
-                    st.info(
-                        "Try moving the upload to a weekday evening (18‑22 UTC) "
-                        "or increasing the number of relevant tags – historically these boost odds."
-                    )
-                else:
-                    st.success("Your video looks primed for a viral push.")
-
-                # ---- Optional: Show latency (nice for judges) -----------------------
-                st.caption(f"API latency: {elapsed:.2f}s")
-
+            st.divider()
+            # ---- Simple metric ------------------------------------------------
+            st.metric(label="Trending Probability", value=f"{prob:.1%}")
+            if is_trending:
+                st.success("High chance of trending.")
             else:
-                # API returned an error (e.g., 400/500)
-                st.error(f"API error {resp.status_code}: {resp.text}")
+                st.error("Low chance of trending.")
 
-        except requests.exceptions.ConnectionError:
-            st.error("Could not reach the API. Is the FastAPI server running?")
-        except requests.exceptions.Timeout:
-            st.error("Request timed out – the backend might be overloaded.")
+            # ---- Probability gauge (Streamlit's progress bar works fine) -------
+            st.progress(min(max(prob, 0.0), 1.0), text=f"{prob:.1%}")
+
+            # ---- Feedback tip ---------------------------------------------------
+            if not is_trending:
+                st.info(
+                    "Try moving the upload to a weekday evening (18‑22 UTC) "
+                    "or increasing the number of relevant tags – historically these boost odds."
+                )
+            else:
+                st.success("Your video looks primed for a viral push.")
+
+            # ---- Optional: Show latency (nice for judges) -----------------------
+            st.caption(f"Inference latency: {elapsed:.2f}s")
+
         except Exception as e:
-            st.exception(e)   # shows full traceback in dev; remove in prod if you prefer
+            st.error(f"Error during prediction: {str(e)}")
+            st.exception(e)
 
 with st.expander("What drove this prediction? (Feature importance)"):
     # Prefer SHAP if you have it, otherwise fall back to the static bar chart
