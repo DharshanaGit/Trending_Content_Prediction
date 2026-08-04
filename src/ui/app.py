@@ -32,19 +32,30 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Reduce the font size of all text in the app for a professional look */
+    html, body, [class*="css"], .stMarkdown, p, span, label, input, select {
+        font-size: 0.95rem !important;
+    }
+    h1 {
+        font-size: 1.8rem !important;
+    }
+    h2, h3, [data-testid="stHeader"] {
+        font-size: 1.25rem !important;
+    }
     .stButton>button {
         width: 100%; 
         border-radius: 4px; 
-        height: 3rem; 
+        height: 2.8rem; 
         font-weight: 600;
-        font-size: 1.05rem;
-        background-color: #2e66ff;
+        font-size: 0.95rem !important;
+        background-color: #28a745;
         color: white;
         border: none;
     }
     .stButton>button:hover {
-        background-color: #1a4fdb;
+        background-color: #218838;
         color: white;
+        border: none;
     }
     .stSlider>div[data-baseweb="slider"]>div {height: .5rem;}
     </style>
@@ -63,13 +74,6 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.subheader("Live Analysis")
-    # Dynamic placeholders that will update in real-time
-    probability_placeholder = st.empty()
-    status_placeholder = st.empty()
-    gauge_placeholder = st.empty()
-    
-    st.divider()
     st.subheader("Model Configuration")
     st.markdown(
         """
@@ -133,8 +137,20 @@ with col_left:
     )
 
     # ---- Publish Country -------------------------------------------------------
-    countries = ["US", "GB", "CA", "IN", "DE", "FR"]
-    publish_country = st.selectbox("Publish Country", countries)
+    countries_dict = {
+        "US": "United States",
+        "GB": "United Kingdom",
+        "CA": "Canada",
+        "IN": "India",
+        "DE": "Germany",
+        "FR": "France"
+    }
+    publish_country = st.selectbox(
+        "Publish Country",
+        options=list(countries_dict.keys()),
+        format_func=lambda k: countries_dict[k],
+        index=0
+    )
 
     # ---- Language (optional) ---------------------------------------------------
     languages_dict = {
@@ -226,59 +242,65 @@ with col_right:
     )
 
 
-# ---- Real-time Model Inference ----------------------------------------------
-if model is not None:
-    try:
-        start = time.time()
-        
-        # Convert input to DataFrame for the model pipeline
-        df = pd.DataFrame({
-            "category_id": [str(category_id)],
-            "publish_country": [str(publish_country)],
-            "upload_hour": [int(upload_hour)],
-            "upload_dayofweek": [int(upload_day_idx)],
-            "num_tags": [int(num_tags)],
-            "title_length": [int(title_length)],
-            "comments_disabled": [int(comments_disabled)],
-            "ratings_disabled": [int(ratings_disabled)],
-            "is_top_channel": [0]
-        })
-        
-        # Predict
-        is_trending = int(model.predict(df)[0])
-        prob = float(model.predict_proba(df)[0][1])
-        elapsed = time.time() - start
+# ---- Prediction Trigger Button ----------------------------------------------
+st.write("")
+if st.button("Predict Probability", use_container_width=True):
+    if model is not None:
+        try:
+            start = time.time()
+            
+            # Convert input to DataFrame for the model pipeline
+            df = pd.DataFrame({
+                "category_id": [str(category_id)],
+                "publish_country": [str(publish_country)],
+                "upload_hour": [int(upload_hour)],
+                "upload_dayofweek": [int(upload_day_idx)],
+                "num_tags": [int(num_tags)],
+                "title_length": [int(title_length)],
+                "comments_disabled": [int(comments_disabled)],
+                "ratings_disabled": [int(ratings_disabled)],
+                "is_top_channel": [0]
+            })
+            
+            # Predict
+            is_trending = int(model.predict(df)[0])
+            prob = float(model.predict_proba(df)[0][1])
+            elapsed = time.time() - start
 
-        # Update sidebar placeholders dynamically
-        probability_placeholder.metric(label="Trending Probability", value=f"{prob:.1%}")
-        if is_trending:
-            status_placeholder.success("High chance of trending.")
-        else:
-            status_placeholder.error("Low chance of trending.")
-        
-        gauge_placeholder.progress(min(max(prob, 0.0), 1.0))
+            # Render prediction results in the main area
+            st.divider()
+            st.subheader("Prediction Result")
+            r_col1, r_col2 = st.columns(2)
+            with r_col1:
+                st.metric(label="Trending Probability", value=f"{prob:.1%}")
+                if is_trending:
+                    st.success("High chance of trending.")
+                else:
+                    st.error("Low chance of trending.")
+            with r_col2:
+                st.write("")
+                st.progress(min(max(prob, 0.0), 1.0))
+                st.caption(f"Inference latency: {elapsed * 1000:.1f}ms (cached model)")
 
-        # Show feedback in the main body area
-        st.divider()
-        st.subheader("Optimization Insights")
-        
-        o_col1, o_col2 = st.columns(2)
-        with o_col1:
-            if not is_trending:
-                st.info(
-                    "💡 Try shifting publication to a weekday evening (18:00 - 22:00 UTC) "
-                    "or raising the number of targeted tags to improve performance."
-                )
-            else:
-                st.success("✨ Your video characteristics match historical trending parameters!")
-        with o_col2:
-            st.caption(f"Inference latency: {elapsed * 1000:.1f}ms (cached model)")
+            # Show feedback in the main body area
+            st.divider()
+            st.subheader("Optimization Insights")
+            
+            o_col1, o_col2 = st.columns(2)
+            with o_col1:
+                if not is_trending:
+                    st.info(
+                        "💡 Try shifting publication to a weekday evening (18:00 - 22:00 UTC) "
+                        "or raising the number of targeted tags to improve performance."
+                    )
+                else:
+                    st.success("✨ Your video characteristics match historical trending parameters!")
 
-    except Exception as e:
-        st.error(f"Error during prediction: {str(e)}")
-        st.exception(e)
-else:
-    st.warning("Model file not found. Inference is currently unavailable.")
+        except Exception as e:
+            st.error(f"Error during prediction: {str(e)}")
+            st.exception(e)
+    else:
+        st.warning("Model file not found. Inference is currently unavailable.")
 
 with st.expander("What drove this prediction? (Feature importance)"):
     # Prefer SHAP if you have it, otherwise fall back to the static bar chart
