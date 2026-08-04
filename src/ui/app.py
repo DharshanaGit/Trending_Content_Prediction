@@ -75,8 +75,8 @@ st.markdown(
 st.markdown(
     """
     <div style='text-align: center; margin-bottom: 2rem;'>
-        <h1>Trending Content Predictor</h1>
-        <p style='color: #666; font-size: 1.05rem !important; max-width: 800px; margin: 0 auto;'>
+        <h1 style='font-size: 3.8rem !important; font-weight: 800 !important; color: #1e293b !important; text-align: center !important; letter-spacing: -2px; line-height: 1.1; margin-bottom: 0.5rem;'>Trending Content Predictor</h1>
+        <p style='color: #666; font-size: 1.1rem !important; max-width: 800px; margin: 0 auto; text-align: center;'>
             <strong>Will your next video go viral?</strong><br/>
             Fill in the metadata below and get an instant probability score.
             Experiment with upload time, category, or tag count to see how the odds change.
