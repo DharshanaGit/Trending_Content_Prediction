@@ -29,8 +29,7 @@ class VideoRequest(BaseModel):
     title_length: int
     comments_disabled: int
     ratings_disabled: int
-    title_caps_ratio: float
-    has_exclamation: int
+    is_top_channel: int
 
 @app.get("/")
 def read_root():
@@ -51,8 +50,7 @@ def predict_trend(video: VideoRequest):
         "title_length": [video.title_length],
         "comments_disabled": [video.comments_disabled],
         "ratings_disabled": [video.ratings_disabled],
-        "title_caps_ratio": [video.title_caps_ratio],
-        "has_exclamation": [video.has_exclamation]
+        "is_top_channel": [video.is_top_channel]
     }
     df = pd.DataFrame(data)
     

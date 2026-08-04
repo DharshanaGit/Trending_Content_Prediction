@@ -130,11 +130,21 @@ with col_left:
         help="Primary language of the video – influences discoverability in local markets.",
     )
 
-    # ---- Video Title -----------------------------------------------------------
-    title = st.text_input(
-        "Video Title",
-        value="OMG! I CANNOT BELIEVE THIS HAPPENED!!",
-        help="Try an ALL CAPS clickbait title with exclamation marks to see how it affects the score!",
+    # ---- Title length -----------------------------------------------------------
+    title_length = st.slider(
+        "Title Length (characters)",
+        min_value=10,
+        max_value=100,
+        value=38,
+        step=1,
+        help="Shorter titles tend to perform better on mobile, but very short titles can be ambiguous.",
+    )
+
+    # ---- Top Channel Flag --------------------------------------------------------
+    is_top_channel = st.checkbox(
+        "Established Channel Status",
+        value=False,
+        help="Check this if the video is published by an established, popular channel (top 500 trending list).",
     )
 
     # ---- Tags (free‑form) -------------------------------------------------------
@@ -193,11 +203,6 @@ with col_right:
 
 
 if st.button("Predict", use_container_width=True):
-    # ---- Compute text features on the fly --------------------------------------
-    t_len = len(title)
-    t_caps_ratio = sum(1 for c in title if c.isupper()) / (t_len + 1)
-    has_exclamation = int("!" in title)
-    
     # ---- Build payload that matches the API ------------------------------------
     payload = {
         "category_id": category_id,
@@ -205,11 +210,10 @@ if st.button("Predict", use_container_width=True):
         "upload_hour": upload_hour,
         "upload_dayofweek": upload_day_idx,
         "num_tags": num_tags,
-        "title_length": t_len,
+        "title_length": title_length,
         "comments_disabled": int(comments_disabled),
         "ratings_disabled": int(ratings_disabled),
-        "title_caps_ratio": t_caps_ratio,
-        "has_exclamation": has_exclamation,
+        "is_top_channel": int(is_top_channel),
     }
 
     # ---- Show a spinner while we wait -----------------------------------------
@@ -227,11 +231,10 @@ if st.button("Predict", use_container_width=True):
                 "upload_hour": [int(upload_hour)],
                 "upload_dayofweek": [int(upload_day_idx)],
                 "num_tags": [int(num_tags)],
-                "title_length": [int(t_len)],
+                "title_length": [int(title_length)],
                 "comments_disabled": [int(comments_disabled)],
                 "ratings_disabled": [int(ratings_disabled)],
-                "title_caps_ratio": [float(t_caps_ratio)],
-                "has_exclamation": [int(has_exclamation)]
+                "is_top_channel": [int(is_top_channel)]
             })
             
             # Predict

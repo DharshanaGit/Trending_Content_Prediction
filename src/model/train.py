@@ -45,9 +45,9 @@ def feature_engineering(df):
     # Calculate title length
     df['title_length'] = df['title'].fillna('').str.len()
     
-    # Calculate advanced text features
-    df['title_caps_ratio'] = df['title'].fillna('').apply(lambda x: sum(1 for c in x if c.isupper()) / (len(x) + 1))
-    df['has_exclamation'] = df['title'].fillna('').str.contains('!').astype(int)
+    # Calculate channel status based on top 500 trending channels in this dataset
+    top_channels = df['channel_title'].value_counts().index[:500].tolist()
+    df['is_top_channel'] = df['channel_title'].isin(top_channels).astype(int)
     
     # Metadata flags
     df['comments_disabled'] = df['comments_disabled'].astype(int)
@@ -70,7 +70,7 @@ def train_model():
     # Define features (X) and target (y)
     features = ['category_id', 'publish_country', 'upload_hour', 'upload_dayofweek', 
                 'num_tags', 'title_length', 'comments_disabled', 'ratings_disabled', 
-                'title_caps_ratio', 'has_exclamation']
+                'is_top_channel']
     X = df[features]
     y = df['is_trending']
     
@@ -80,7 +80,7 @@ def train_model():
     # Preprocessing Pipeline
     categorical_cols = ['category_id', 'publish_country']
     numeric_cols = ['upload_hour', 'upload_dayofweek', 'num_tags', 'title_length',
-                    'comments_disabled', 'ratings_disabled', 'title_caps_ratio', 'has_exclamation']
+                    'comments_disabled', 'ratings_disabled', 'is_top_channel']
     
     preprocessor = ColumnTransformer(
         transformers=[
