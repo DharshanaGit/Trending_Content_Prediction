@@ -137,10 +137,24 @@ with col_left:
     publish_country = st.selectbox("Publish Country", countries)
 
     # ---- Language (optional) ---------------------------------------------------
-    languages = ["en", "es", "fr", "de", "ja", "ko", "pt", "ru", "hi", "ar", "zh"]
+    languages_dict = {
+        "en": "English",
+        "ta": "Tamil",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "pt": "Portuguese",
+        "ru": "Russian",
+        "hi": "Hindi",
+        "ar": "Arabic",
+        "zh": "Chinese"
+    }
     language = st.selectbox(
         "Language (audio/subtitles)",
-        options=languages,
+        options=list(languages_dict.keys()),
+        format_func=lambda k: languages_dict[k],
         index=0,
         help="Primary language of the video – influences discoverability in local markets.",
     )
