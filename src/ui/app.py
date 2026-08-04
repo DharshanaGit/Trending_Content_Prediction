@@ -205,15 +205,15 @@ with col_left:
 
 
 
-    # ---- Tags (free‑form) -------------------------------------------------------
-    tags_input = st.text_area(
-        "Tags (comma‑separated)",
-        value="funny,comedy,sketch",
-        height=80,
-        help="Enter up to 50 tags separated by commas. The app will count them internally.",
+    # ---- Number of Tags ---------------------------------------------------------
+    num_tags = st.slider(
+        "Number of Tags",
+        min_value=0,
+        max_value=100,
+        value=15,
+        step=1,
+        help="The total number of tags associated with your video metadata.",
     )
-    # Derive the count for the API (you can also send the raw string if you extend the backend)
-    num_tags = max(0, len([t.strip() for t in tags_input.split(",") if t.strip()]))
 
 with col_right:
     st.subheader("Upload Schedule")
