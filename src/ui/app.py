@@ -155,7 +155,13 @@ with col_left:
         "US": "United States",
         "GB": "United Kingdom",
         "CANADA": "Canada",
-        "FRANCE": "France"
+        "FRANCE": "France",
+        "IN": "India",
+        "DE": "Germany",
+        "JP": "Japan",
+        "BR": "Brazil",
+        "MX": "Mexico",
+        "KR": "South Korea"
     }
     publish_country = st.selectbox(
         "Publish Country",
