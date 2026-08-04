@@ -32,10 +32,6 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Standardize standard app text font size for a professional look */
-    html, body, p, span, label, input, select, .stWidgetLabel, .stSelectbox, .stSlider {
-        font-size: 0.92rem !important;
-    }
     /* Main project heading: Center aligned, large, and premium extra-bold */
     h1 {
         font-size: 4.2rem !important;
@@ -46,15 +42,20 @@ st.markdown(
         letter-spacing: -2px;
         line-height: 1.1;
     }
-    h2, h3, [data-testid="stHeader"] {
-        font-size: 1.25rem !important;
+    /* Subheadings: Make them larger and prominent as requested */
+    h2, h3 {
+        font-size: 1.8rem !important;
+        font-weight: 700 !important;
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+        color: #1e293b !important;
     }
     .stButton>button {
         width: 100%; 
         border-radius: 4px; 
-        height: 2.8rem; 
+        height: 3rem; 
         font-weight: 600;
-        font-size: 0.95rem !important;
+        font-size: 1.1rem !important;
         background-color: #28a745;
         color: white;
         border: none;
